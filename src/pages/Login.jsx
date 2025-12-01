@@ -1,7 +1,7 @@
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { API_BASE_URL } from "../apiConfig"; // Import Config
-import "../AuthPage.css";
+import { useNavigate, Link } from "react-router-dom";
+import { API_BASE_URL } from "../apiConfig"; 
+import "../styles/AuthPage.css"; // Ensure you keep the CSS file
 
 const Login = () => {
   const navigate = useNavigate();
@@ -15,6 +15,7 @@ const Login = () => {
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
+    setErrors({ ...errors, [e.target.name]: "" }); // Clear error on type
   };
 
   const handleSubmit = async (e) => {
@@ -27,7 +28,7 @@ const Login = () => {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}login.php`, {
+      const response = await fetch(`${API_BASE_URL}/login.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
@@ -36,32 +37,46 @@ const Login = () => {
       const data = await response.json();
 
       if (data.status === "success") {
-        // Save user info to LocalStorage
+        // 1. Save Session
         localStorage.setItem("user", JSON.stringify(data.user));
-        alert("Login Successful! Welcome " + data.user.name);
+        alert("Login Successful!");
 
-        // Redirect based on role
+        // 2. Redirect based on Role
         if (data.user.role === "admin") navigate("/admin-dashboard");
         else if (data.user.role === "provider") navigate("/provider-dashboard");
-        else if (data.user.role === "customer") navigate("/customer-dashboard");
-        else navigate("/"); // Customer home
+        else navigate("/"); // Customer Home
       } else {
         setErrors({ form: data.message });
       }
     } catch (error) {
       console.error("Error:", error);
-      setErrors({ form: "Server error. Please try again." });
+      setErrors({ form: "Server connection failed" });
     }
   };
 
   return (
     <div className="auth-page-wrapper">
-        {/* ... Keep your existing Layout/HTML ... */}
-        
+      <button className="auth-back-btn" onClick={() => navigate("/")}>
+        <span>←</span> Back
+      </button>
+
+      <div className="auth-card">
+        {/* LEFT SIDE (Go to Signup) */}
+        <div className="auth-side">
+          <h2 className="auth-side-title">New Here?</h2>
+          <p className="auth-side-text">
+            Create a free account to book electricians, plumbers, and more.
+          </p>
+          <Link to="/signup" className="auth-side-button">
+            Go to Sign Up
+          </Link>
+        </div>
+
+        {/* RIGHT SIDE (Login Form) */}
         <div className="auth-main">
           <h3 className="auth-title">Login</h3>
           
-          {errors.form && <div className="alert alert-danger">{errors.form}</div>}
+          {errors.form && <div className="alert alert-danger p-2 mb-3">{errors.form}</div>}
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="mb-3">
@@ -73,6 +88,7 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter email"
+                required
               />
             </div>
 
@@ -85,16 +101,16 @@ const Login = () => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password"
+                required
               />
             </div>
 
-            <button type="submit" className="btn btn-primary w-100 auth-primary-btn">
+            <button type="submit" className="auth-primary-btn w-100">
               Login
             </button>
           </form>
-          
-          {/* ... Footer Links ... */}
         </div>
+      </div>
     </div>
   );
 };
