@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { API_BASE_URL } from "../apiConfig";
-import "../styles/AuthPage.css";
+import { API_BASE_URL } from "../../config/apiConfig";
+import "../../styles/AuthPage.css";
 
 const Registration = () => {
   const navigate = useNavigate();

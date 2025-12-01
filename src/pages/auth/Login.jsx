@@ -1,25 +1,30 @@
 import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { API_BASE_URL } from "../apiConfig"; 
-import "../styles/AuthPage.css"; // Ensure you keep the CSS file
+import { API_BASE_URL } from "../../config/apiConfig"; 
+import "../../styles/AuthPage.css";
 
 const Login = () => {
   const navigate = useNavigate();
-
+  
+  // State for loading, form data, and errors
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "", 
     password: "",
   });
-
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    setErrors({ ...errors, [e.target.name]: "" }); // Clear error on type
+    // Clear error when user starts typing again
+    if (errors[e.target.name] || errors.form) {
+        setErrors({ ...errors, [e.target.name]: "", form: "" });
+    }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setErrors({}); // Clear previous errors
 
     // Basic Validation
     if (!formData.email || !formData.password) {
@@ -28,6 +33,8 @@ const Login = () => {
     }
 
     try {
+      setLoading(true); // Start loading
+      
       const response = await fetch(`${API_BASE_URL}/login.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -39,18 +46,25 @@ const Login = () => {
       if (data.status === "success") {
         // 1. Save Session
         localStorage.setItem("user", JSON.stringify(data.user));
-        alert("Login Successful!");
-
+        
         // 2. Redirect based on Role
-        if (data.user.role === "admin") navigate("/admin-dashboard");
-        else if (data.user.role === "provider") navigate("/provider-dashboard");
-        else navigate("/"); // Customer Home
+        // Short delay to let user see success state (optional but nice)
+        setTimeout(() => {
+            if (data.user.role === "admin") navigate("/admin/dashboard");
+            else if (data.user.role === "provider") navigate("/provider/dashboard");
+            else if (data.user.role === "customer") navigate("/user/dashboard");
+            else navigate("/"); 
+        }, 500);
+        
       } else {
-        setErrors({ form: data.message });
+        // Show specific error from backend (e.g. "Invalid password")
+        setErrors({ form: data.message || "Login failed. Please try again." });
+        setLoading(false); // Stop loading on error
       }
     } catch (error) {
       console.error("Error:", error);
-      setErrors({ form: "Server connection failed" });
+      setErrors({ form: "Server connection failed. Please check your internet." });
+      setLoading(false); // Stop loading on catch
     }
   };
 
@@ -61,13 +75,13 @@ const Login = () => {
       </button>
 
       <div className="auth-card">
-        {/* LEFT SIDE (Go to Signup) */}
+        {/* LEFT SIDE */}
         <div className="auth-side">
           <h2 className="auth-side-title">New Here?</h2>
           <p className="auth-side-text">
             Create a free account to book electricians, plumbers, and more.
           </p>
-          <Link to="/signup" className="auth-side-button">
+          <Link to="/signup" className="auth-side-button text-decoration-none">
             Go to Sign Up
           </Link>
         </div>
@@ -76,7 +90,13 @@ const Login = () => {
         <div className="auth-main">
           <h3 className="auth-title">Login</h3>
           
-          {errors.form && <div className="alert alert-danger p-2 mb-3">{errors.form}</div>}
+          {/* Enhanced Error Alert */}
+          {errors.form && (
+            <div className="alert alert-danger d-flex align-items-center p-2 mb-3" role="alert">
+                <i className="bi bi-exclamation-triangle-fill me-2"></i>
+                <div>{errors.form}</div>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="auth-form">
             <div className="mb-3">
@@ -84,11 +104,11 @@ const Login = () => {
               <input
                 type="email"
                 name="email"
-                className="form-control"
+                className={`form-control ${errors.form ? "is-invalid" : ""}`}
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter email"
-                required
+                disabled={loading} // Disable input while loading
               />
             </div>
 
@@ -97,16 +117,27 @@ const Login = () => {
               <input
                 type="password"
                 name="password"
-                className="form-control"
+                className={`form-control ${errors.form ? "is-invalid" : ""}`}
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Password"
-                required
+                disabled={loading} // Disable input while loading
               />
             </div>
 
-            <button type="submit" className="auth-primary-btn w-100">
-              Login
+            <button 
+                type="submit" 
+                className="auth-primary-btn w-100 d-flex justify-content-center align-items-center" 
+                disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <span className="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>
+                  Logging in...
+                </>
+              ) : (
+                "Login"
+              )}
             </button>
           </form>
         </div>

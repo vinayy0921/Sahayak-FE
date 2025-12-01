@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { API_BASE_URL } from '../apiConfig';
+import { API_BASE_URL } from '../../config/apiConfig';
 // 1. Import Anime.js
 import { animate, stagger } from 'animejs';
 
 const Register = () => {
   const navigate = useNavigate();
-  
+
   // State Management
   const [formData, setFormData] = useState({
     name: '',
@@ -21,7 +21,7 @@ const Register = () => {
   });
 
   // 2. Anime.js Animation Logic
- useEffect(() => {
+  useEffect(() => {
     // Animation 1: Card
     animate('.register-card', {
       opacity: [0, 1],
@@ -59,7 +59,7 @@ const Register = () => {
 
     if (formData.password !== formData.confirmPassword) {
       // Small shake animation on error using animejs
-     
+
       alert("Passwords do not match!");
       return;
     }
@@ -73,7 +73,7 @@ const Register = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      
+
       const data = await response.json();
 
       if (data.status === 'success') {
@@ -122,7 +122,9 @@ const Register = () => {
           }
         `}
       </style>
-
+      <button className="auth-back-btn" onClick={() => navigate("/")}>
+        <span>←</span> Back
+      </button>
       <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center register-bg py-5">
         <div className="blob blob-1"></div>
         <div className="blob blob-2"></div>
@@ -130,35 +132,35 @@ const Register = () => {
         {/* Added 'register-card' class for AnimeJS to target */}
         <div className="card shadow-lg border-0 rounded-4 overflow-hidden register-card" style={{ maxWidth: '1100px', width: '100%', zIndex: 1, opacity: 0 }}>
           <div className="row g-0">
-            
+
             {/* LEFT SIDE */}
-            <div className="col-lg-5 d-none d-lg-flex flex-column justify-content-center p-5 text-white" 
-                 style={{ background: 'linear-gradient(135deg, #0d6efd 0%, #0043a8 100%)' }}>
-              
+            <div className="col-lg-5 d-none d-lg-flex flex-column justify-content-center p-5 text-white"
+              style={{ background: 'linear-gradient(135deg, #0d6efd 0%, #0043a8 100%)' }}>
+
               <div className="mb-auto left-content-item">
                 <h3 className="fw-bold"><span className="text-warning">SAHA</span>YAK.</h3>
               </div>
-              
+
               <h1 className="fw-bold display-5 mb-4 left-content-item">Turn Your Skills Into Income.</h1>
               <p className="lead mb-4 opacity-75 left-content-item">Join the fastest-growing network of professionals in Surat.</p>
-              
+
               <div className="d-flex flex-column gap-3 fs-5 opacity-90 mb-5">
                 <div className="d-flex align-items-center left-content-item">
                   <div className="bg-white bg-opacity-25 p-2 rounded-circle me-3">
-                    <i className="bi bi-currency-rupee text-white"></i>
+                    <i className="fa-solid fa-indian-rupee-sign"></i>
                   </div>
                   <span>Earn on your terms</span>
                 </div>
                 <div className="d-flex align-items-center left-content-item">
                   <div className="bg-white bg-opacity-25 p-2 rounded-circle me-3">
-                    <i className="bi bi-people-fill text-white"></i>
+                    <i className="fa-solid fa-people-group text-white"></i>
                   </div>
                   <span>Connect with 1000+ Customers</span>
                 </div>
               </div>
-              
+
               <div className="mt-auto left-content-item">
-                <small className="opacity-75">Already have an account?</small> <br/>
+                <small className="opacity-75">Already have an account?</small> <br />
                 <Link to="/login" className="text-white fw-bold text-decoration-none fs-5">Login here &rarr;</Link>
               </div>
             </div>
@@ -172,12 +174,12 @@ const Register = () => {
 
               <form onSubmit={handleSubmit}>
                 <div className="row g-3">
-                  
+
                   {/* Personal Info */}
                   <div className="col-12 form-item">
                     <h6 className="text-primary fw-bold text-uppercase small letter-spacing-1 border-bottom pb-2">Personal Details</h6>
                   </div>
-                  
+
                   <div className="col-md-6 form-item">
                     <div className="form-floating">
                       <input type="text" className="form-control" name="name" placeholder="Name" onChange={handleChange} required />
