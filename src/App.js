@@ -1,21 +1,23 @@
-import React from 'react';
-import './App.css';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import LandingPage from './pages/LandingPage';
-import Register from './provider/Register';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
+import Login from "./pages/Login"; // Import separate file
+import Registration from "./pages/Registration"; // Import separate file
 
 function App() {
   return (
-    <>
-      <Router>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/provider/register" element={<Register />} />
-
-        </Routes>
-      </Router>
-
-    </>
+    <Router>
+      <Routes>
+        <Route path="/" element={<LandingPage />} />
+        
+        {/* Separate Routes */}
+        <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Registration />} />
+        
+        {/* Keep your provider route if needed */}
+        {/* <Route path="/provider-register" element={<ProviderRegister />} /> */}
+      </Routes>
+    </Router>
   );
 }
 
