@@ -52,7 +52,7 @@ const Login = () => {
         setTimeout(() => {
             if (data.user.role === "admin") navigate("/admin/dashboard");
             else if (data.user.role === "provider") navigate("/provider/dashboard");
-            else if (data.user.role === "customer") navigate("/user/dashboard");
+            else if (data.user.role === "customer") navigate("/user/home");
             else navigate("/"); 
         }, 500);
         
