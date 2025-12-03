@@ -19,8 +19,8 @@ const LandingPage = () => {
 
           <div className="collapse navbar-collapse" id="navbarNav">
             <ul className="navbar-nav ms-auto align-items-center gap-3">
-              <li className="nav-item">
-                <a className="nav-link text-dark fw-medium" href="/">Become a Provider</a>
+              <li className="nav-item provider-link">
+                <Link className="nav-link text-dark fw-medium" to="/provider/register">Become a Provider</Link>
               </li>
               <li className="nav-item">
                 <Link className="btn btn-outline-dark px-4 rounded-1" to="/login">Login</Link>
