@@ -6,6 +6,18 @@ import BottomNav from '../../components/BottomNav';
 
 const Home = () => {
   const user = JSON.parse(localStorage.getItem('user')) || { name: 'Vinay' };
+  const [topProviders, setTopProviders] = React.useState([]);
+
+  useEffect(() => {
+    fetch("http://localhost/Sahayak-BE/get_providers.php")
+      .then(res => res.json())
+      .then(data => {
+        if (data.status) {
+          setTopProviders(data.providers);
+        }
+      })
+      .catch(err => console.error("Error fetching providers:", err));
+  }, []);
 
   return (
     <>
@@ -38,16 +50,16 @@ const Home = () => {
 
       <div className="bg-light min-vh-100 pb-5">
 
-        
+
         <div className="container py-4">
-          
+
           {/* --- SECTION 1: Welcome Banner & Stats --- */}
           <div className="row mb-4">
             {/* Welcome Card */}
             <div className="col-lg-8 mb-3 mb-lg-0 animate-card">
-              <div className="card border-0 shadow-sm rounded-4 text-white overflow-hidden position-relative h-100 hover-card" 
-                   style={{ background: 'linear-gradient(135deg, #0d6efd 0%, #0099ff 100%)' }}>
-                
+              <div className="card border-0 shadow-sm rounded-4 text-white overflow-hidden position-relative h-100 hover-card"
+                style={{ background: 'linear-gradient(135deg, #0d6efd 0%, #0099ff 100%)' }}>
+
                 {/* Decoration Circles */}
                 <div className="position-absolute rounded-circle bg-white opacity-10" style={{ width: '250px', height: '250px', top: '-80px', right: '-80px' }}></div>
                 <div className="position-absolute rounded-circle bg-white opacity-10" style={{ width: '150px', height: '150px', bottom: '-40px', left: '5%' }}></div>
@@ -61,7 +73,7 @@ const Home = () => {
                     </Link>
                   </div>
                   <div className="d-none d-md-block opacity-25">
-                     <i className="fa-solid fa-house-chimney display-1"></i>
+                    <i className="fa-solid fa-house-chimney display-1"></i>
                   </div>
                 </div>
               </div>
@@ -76,15 +88,15 @@ const Home = () => {
                     <span className="badge bg-success bg-opacity-10 text-success rounded-pill px-3">+ Add Money</span>
                   </div>
                   <h1 className="fw-bold text-dark mb-4">₹ 450.00</h1>
-                  
+
                   <div className="d-flex gap-2">
                     <div className="flex-grow-1 p-3 bg-light rounded-3 text-center">
-                        <small className="d-block text-muted mb-1">Active</small>
-                        <h5 className="fw-bold m-0 text-primary">2</h5>
+                      <small className="d-block text-muted mb-1">Active</small>
+                      <h5 className="fw-bold m-0 text-primary">2</h5>
                     </div>
                     <div className="flex-grow-1 p-3 bg-light rounded-3 text-center">
-                        <small className="d-block text-muted mb-1">Completed</small>
-                        <h5 className="fw-bold m-0 text-dark">14</h5>
+                      <small className="d-block text-muted mb-1">Completed</small>
+                      <h5 className="fw-bold m-0 text-dark">14</h5>
                     </div>
                   </div>
                 </div>
@@ -97,7 +109,7 @@ const Home = () => {
             <h5 className="fw-bold text-dark m-0">Categories</h5>
             <Link to="/search" className="text-decoration-none small fw-bold">See All</Link>
           </div>
-          
+
           <div className="row g-3 mb-5 animate-card">
             <CategoryCard icon="fa-wrench" color="primary" title="Plumber" link="/search?cat=plumber" />
             <CategoryCard icon="fa-bolt" color="warning" title="Electrician" link="/search?cat=electrician" />
@@ -109,7 +121,7 @@ const Home = () => {
 
           {/* --- SECTION 3: Featured Providers & Active Booking --- */}
           <div className="row">
-            
+
             {/* LEFT: Active Booking & History */}
             <div className="col-lg-7 mb-4">
               {/* Active Booking */}
@@ -146,7 +158,7 @@ const Home = () => {
 
             {/* RIGHT: Top Rated Providers & Promo */}
             <div className="col-lg-5">
-              
+
               {/* Special Offer */}
               <div className="card border-0 shadow-sm rounded-4 bg-dark text-white overflow-hidden mb-4 hover-card animate-card">
                 <div className="card-body p-4 d-flex align-items-center justify-content-between position-relative">
@@ -162,11 +174,23 @@ const Home = () => {
 
               {/* Top Rated Pros (New Section) */}
               <h5 className="fw-bold mb-3 animate-card">Top Rated in Surat</h5>
+
               <div className="d-flex flex-column gap-3 animate-card">
-                <ProviderMiniCard name="Rajesh Mistry" role="Plumber" rating="4.9" img="https://randomuser.me/api/portraits/men/32.jpg" />
-                <ProviderMiniCard name="Priya Services" role="Electrician" rating="4.8" img="https://randomuser.me/api/portraits/women/44.jpg" />
-                <ProviderMiniCard name="CleanX Crew" role="Cleaning" rating="5.0" img="https://randomuser.me/api/portraits/men/85.jpg" />
+                {topProviders.length === 0 ? (
+                  <p className="text-muted">Loading...</p>
+                ) : (
+                  topProviders.map((pro) => (
+                    <ProviderMiniCard
+                      key={pro.id}
+                      name={pro.name}
+                      role={pro.profession}
+                      rating="4.8"
+                      img={`http://localhost/Sahayak-BE/DB/uploads/profile_pic/${pro.profile_img}`}
+                    />
+                  ))
+                )}
               </div>
+
 
             </div>
           </div>
@@ -209,7 +233,7 @@ const HistoryItem = ({ title, date, price, status }) => (
     </div>
     <div className="text-end">
       <h6 className="mb-0 fw-bold">₹{price}</h6>
-      <small className="text-success fw-bold" style={{fontSize: '0.7rem'}}>{status}</small>
+      <small className="text-success fw-bold" style={{ fontSize: '0.7rem' }}>{status}</small>
     </div>
   </div>
 );
@@ -228,5 +252,6 @@ const ProviderMiniCard = ({ name, role, rating, img }) => (
     </div>
   </div>
 );
+
 
 export default Home;
