@@ -1,187 +1,221 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
-// import anime from 'animejs/lib/anime.es.js'; // Anime.js V3
-import BottomNav from '../../components/BottomNav'; // Your bottom nav
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import BottomNav from '../../components/BottomNav';
+import { API_BASE_URL } from '../../config/apiConfig';
+import '../../styles/SearchPage.css';
 
 const SearchPage = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const inputRef = useRef(null);
-  const [query, setQuery] = useState('');
+
+  const [query, setQuery] = useState(searchParams.get('q') || '');
   const [recentSearches, setRecentSearches] = useState([]);
+  const [results, setResults] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  // Mock Data
-  const suggestions = [
-    "Plumber in Adajan", "AC Repair", "Sofa Cleaning", "Electrician"
-  ];
+  const isSearching = !!searchParams.get('q');
+  const popularTags = ["Cleaning", "Painting", "Carpenter", "Salon", "Plumber"];
 
-  const popularTags = ["Cleaning", "Painting", "Pest Control", "Carpenter", "Salon"];
+  useEffect(() => {
+    const currentQuery = searchParams.get('q');
+    if (currentQuery) {
+      setQuery(currentQuery);
+      fetchResults(currentQuery);
+    } else {
+      setResults([]);
+      setQuery('');
+      const stored = JSON.parse(localStorage.getItem('recentSearches')) || [];
+      setRecentSearches(stored);
+    }
+  }, [searchParams]);
 
-  // useEffect(() => {
-  //   // 1. Auto-focus input
-  //   if(inputRef.current) inputRef.current.focus();
+  useEffect(() => {
+    if (inputRef.current && !isSearching) inputRef.current.focus();
+  }, []);
 
-  //   // 2. Load recent searches
-  //   const stored = JSON.parse(localStorage.getItem('recentSearches')) || [];
-  //   setRecentSearches(stored);
-
-  //   // 3. Animation: Slide items up
-  // //   anime({
-  // //     targets: '.animate-item',
-  // //     translateY: [20, 0],
-  // //     opacity: [0, 1],
-  // //     delay: anime.stagger(50),
-  // //     easing: 'easeOutExpo'
-  // //   });
-  // // }, []);
+  const fetchResults = async (searchTerm) => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}user/search.php?q=${searchTerm}`);
+      const data = await response.json();
+      setResults(data);
+    } catch (error) {
+      console.error("Search Error:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSearch = (searchTerm) => {
-    if(!searchTerm.trim()) return;
-    
-    // Save to Recent
-    const updated = [searchTerm, ...recentSearches.filter(s => s !== searchTerm)].slice(0, 5);
+    if (!searchTerm.trim()) return;
+    setSearchParams({ q: searchTerm });
+    const stored = JSON.parse(localStorage.getItem('recentSearches')) || [];
+    const updated = [searchTerm, ...stored.filter(s => s !== searchTerm)].slice(0, 5);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
-    
-    // Navigate to results (You will build ResultsPage later)
-    // navigate(`/results?q=${searchTerm}`);
-    alert(`Searching for: ${searchTerm}`);
   };
 
-  const clearRecent = () => {
-    localStorage.removeItem('recentSearches');
-    setRecentSearches([]);
+  const clearSearch = () => {
+    setQuery('');
+    setSearchParams({});
   };
+
+  const goToProvider = (id) => {
+    navigate(`/user/provider/${id}`);
+  };
+
+  const handleBook = (service) => {
+    // We pass the entire service object to the next page
+    navigate('/user/book-service', { state: { service: service } });
+};
 
   return (
     <>
-      <style>
-        {`
-          .search-input-wrapper {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            display: flex;
-            align-items: center;
-            padding: 8px 15px;
-            border: 1px solid #eee;
-            transition: all 0.2s ease;
-          }
-          .search-input-wrapper:focus-within {
-            border-color: #0d6efd;
-            box-shadow: 0 4px 15px rgba(13, 110, 253, 0.15);
-          }
-          .search-input {
-            border: none;
-            outline: none;
-            width: 100%;
-            font-size: 1rem;
-            color: #333;
-            margin-left: 10px;
-          }
-          .tag-pill {
-            background: #f8f9fa;
-            border: 1px solid #e9ecef;
-            padding: 6px 14px;
-            border-radius: 20px;
-            font-size: 0.85rem;
-            color: #555;
-            white-space: nowrap;
-            transition: all 0.2s;
-            cursor: pointer;
-          }
-          .tag-pill:hover {
-            background: #e9ecef;
-            color: #000;
-          }
-        `}
-      </style>
 
-      <div className="bg-white min-vh-100 pb-5">
-        
-        {/* --- HEADER --- */}
-        <div className="sticky-top bg-white px-3 py-3 border-bottom">
+      <div className="bg-light min-vh-100 pb-5">
+
+        {/* HEADER */}
+        <div className="sticky-top bg-white px-3 py-3 border-bottom shadow-sm z-3">
           <div className="d-flex align-items-center gap-3">
-            <button onClick={() => navigate(-1)} className="btn btn-light rounded-circle p-2" style={{width:'40px', height:'40px'}}>
+            <button onClick={() => navigate(-1)} className="btn btn-light rounded-circle p-2 shadow-sm">
               <i className="fa-solid fa-arrow-left text-muted"></i>
             </button>
-            
+
             <div className="search-input-wrapper flex-grow-1">
               <i className="fa-solid fa-magnifying-glass text-muted"></i>
-              <input 
+              <input
                 ref={inputRef}
-                type="text" 
-                className="search-input" 
-                placeholder="Search for services..."
+                type="text"
+                className="search-input"
+                placeholder="Search services (e.g. Plumber)..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSearch(query)}
               />
               {query && (
-                <i className="fa-solid fa-xmark text-muted cursor-pointer" onClick={() => setQuery('')}></i>
+                <i className="fa-solid fa-xmark text-muted cursor-pointer" onClick={clearSearch}></i>
               )}
             </div>
           </div>
         </div>
 
-        {/* --- BODY --- */}
+        {/* BODY */}
         <div className="container py-4">
-          
-          {/* 1. Recent Searches */}
-          {recentSearches.length > 0 && (
-            <div className="mb-4 animate-item">
-              <div className="d-flex justify-content-between align-items-center mb-2">
-                <h6 className="fw-bold text-muted small text-uppercase mb-0">Recent</h6>
-                <button onClick={clearRecent} className="btn btn-link text-decoration-none p-0 small text-muted">Clear</button>
-              </div>
-              <div className="list-group list-group-flush">
-                {recentSearches.map((item, index) => (
-                  <button 
-                    key={index} 
-                    className="list-group-item list-group-item-action border-0 px-0 d-flex align-items-center gap-3"
-                    onClick={() => handleSearch(item)}
-                  >
-                    <i className="fa-regular fa-clock text-muted"></i>
-                    <span>{item}</span>
-                    <i className="fa-solid fa-arrow-up-right-from-square ms-auto text-muted small opacity-50"></i>
-                  </button>
-                ))}
+
+          {loading && (
+            <div className="text-center py-5">
+              <div className="spinner-border text-primary" role="status"></div>
+              <p className="text-muted mt-2 small fw-medium">Searching best pros...</p>
+            </div>
+          )}
+
+          {!loading && isSearching && (
+            <div className="animate-fade-in">
+              <h6 className="fw-bold mb-3 text-dark">Results for "{searchParams.get('q')}"</h6>
+
+              {results.length === 0 ? (
+                <div className="text-center py-5 opacity-50">
+                  <i className="fa-regular fa-face-frown display-1 mb-3 text-secondary"></i>
+                  <h5>No services found</h5>
+                  <p>Try searching for general terms like "Cleaning"</p>
+                </div>
+              ) : (
+                <div className="row g-3">
+                  {results.map((service) => (
+                    <div className="col-12 col-md-6 col-lg-4" key={service.id}>
+                      {/* --- MODERN RESULT CARD --- */}
+                      <div className="card border-0 shadow-sm rounded-4 p-3 modern-card h-100 cursor-pointer" onClick={() => goToProvider(service.provider_id)}
+                      >
+                        <div className="d-flex gap-3">
+
+                          {/* Left: Image */}
+                          <div className="service-img-container">
+                            <img
+                              src={service.profile_img || "https://via.placeholder.com/100"}
+                              className="service-img"
+                              alt="provider"
+                            />
+                          </div>
+
+                          {/* Right: Content */}
+                          <div className="flex-grow-1 d-flex flex-column justify-content-between">
+
+                            {/* Top Section */}
+                            <div>
+                              <div className="d-flex justify-content-between align-items-start mb-1">
+                                <h6 className="fw-bold mb-0 text-dark text-truncate" style={{ maxWidth: '140px' }}>{service.service_name}</h6>
+                                <span className="badge bg-warning text-dark d-flex align-items-center gap-1 px-2">
+                                  4.8 <i className="fa-solid fa-star" style={{ fontSize: '0.6rem' }}></i>
+                                </span>
+                              </div>
+
+                              <div className="d-flex align-items-center gap-2 mb-2">
+                                <img src={service.profile_img || "https://via.placeholder.com/30"} className="provider-avatar-small" alt="" />
+                                <small className="text-muted fw-medium" style={{ fontSize: '0.85rem' }}>{service.provider_name}</small>
+                                {service.is_verified == 1 && <i className="fa-solid fa-circle-check text-primary small" title="Verified"></i>}
+                              </div>
+
+                              <div className="d-flex align-items-center gap-1 text-muted small mb-2">
+                                <i className="fa-solid fa-location-dot text-danger opacity-75"></i>
+                                <span className="text-truncate" style={{ maxWidth: '120px' }}>{service.city || "Surat"}</span>
+                              </div>
+                            </div>
+
+                            {/* Bottom Action Section */}
+                            <div className="d-flex justify-content-between align-items-center border-top pt-2 mt-1">
+                              <div>
+                                <small className="text-muted d-block" style={{ fontSize: '0.7rem', lineHeight: '1' }}>STARTING AT</small>
+                                <span className="fw-bold text-dark fs-5">₹{service.price_per_hour}</span>
+                              </div>
+                              <button className="book-btn shadow-sm"
+                                onClick={(e) => { e.stopPropagation(); handleBook(service); }}>
+                                Book
+                              </button>
+                            </div>
+
+                          </div>
+                        </div>
+                      </div>
+                      {/* -------------------------- */}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+
+          {!loading && !isSearching && (
+            <div className="animate-fade-in">
+              {recentSearches.length > 0 && (
+                <div className="mb-4">
+                  <div className="d-flex justify-content-between align-items-center mb-2">
+                    <h6 className="fw-bold text-secondary small text-uppercase mb-0">Recent</h6>
+                    <button onClick={() => { localStorage.removeItem('recentSearches'); setRecentSearches([]) }} className="btn btn-link text-decoration-none p-0 small text-muted">Clear</button>
+                  </div>
+                  <div className="d-flex flex-wrap gap-2">
+                    {recentSearches.map((item, index) => (
+                      <span key={index} className="badge bg-white text-secondary border px-3 py-2 fw-normal cursor-pointer" onClick={() => handleSearch(item)}>
+                        <i className="fa-regular fa-clock me-2"></i>{item}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <h6 className="fw-bold text-secondary small text-uppercase mb-3">Popular</h6>
+                <div className="d-flex flex-wrap gap-2">
+                  {popularTags.map((tag, idx) => (
+                    <span key={idx} className="badge bg-light text-dark border px-3 py-2 fw-medium cursor-pointer hover-scale" onClick={() => handleSearch(tag)}>
+                      {tag}
+                    </span>
+                  ))}
+                </div>
               </div>
             </div>
           )}
 
-          {/* 2. Popular Tags */}
-          <div className="mb-4 animate-item">
-            <h6 className="fw-bold text-muted small text-uppercase mb-3">Popular</h6>
-            <div className="d-flex flex-wrap gap-2">
-              {popularTags.map((tag, idx) => (
-                <span key={idx} className="tag-pill" onClick={() => handleSearch(tag)}>
-                  {tag}
-                </span>
-              ))}
-            </div>
-          </div>
-
-          {/* 3. Suggestions (Static for now) */}
-          <div className="animate-item">
-            <h6 className="fw-bold text-muted small text-uppercase mb-2">Suggestions</h6>
-            <div className="list-group list-group-flush">
-              {suggestions.map((item, index) => (
-                <button 
-                  key={index} 
-                  className="list-group-item list-group-item-action border-0 px-0 py-3 d-flex align-items-center gap-3"
-                  onClick={() => handleSearch(item)}
-                >
-                  <div className="bg-light rounded-circle p-2 text-primary">
-                    <i className="fa-solid fa-fire"></i>
-                  </div>
-                  <span className="fw-medium">{item}</span>
-                </button>
-              ))}
-            </div>
-          </div>
-
         </div>
-
-        {/* --- BOTTOM NAV (Visible so user can switch back) --- */}
         <BottomNav />
       </div>
     </>

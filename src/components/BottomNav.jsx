@@ -26,7 +26,7 @@ const BottomNav = () => {
 
       {/* 3. My Bookings */}
       <NavLink 
-        to="/my-bookings" 
+        to="/user/my-bookings" 
         className="nav-dock-item" 
         data-label="Bookings"
       >
@@ -35,7 +35,7 @@ const BottomNav = () => {
 
       {/* 4. Profile */}
       <NavLink 
-        to="/profile" 
+        to="/user/profile" 
         className="nav-dock-item" 
         data-label="Profile"
       >
