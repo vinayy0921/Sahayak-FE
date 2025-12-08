@@ -1,28 +1,39 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom'; // 1. Import useLocation
+import { Outlet, useLocation } from 'react-router-dom';
 import Navbar from '../../components/Navbar';
 import BottomNav from '../../components/BottomNav';
 
 const UserLayout = () => {
-  const location = useLocation(); // 2. Get current route
+  const location = useLocation();
 
-  // 3. Define conditions to hide the Top Navbar
-  // We want to hide it ONLY on the search page
+  // 1. Hide Top Navbar on Search
   const hideNavbar = location.pathname === '/user/search';
+
+  // 2. Hide Bottom Nav on Provider Details AND Booking Page
+  // We use .startsWith() because the ID changes (e.g. /user/provider/123)
+  const hideBottomNav = location.pathname.startsWith('/user/provider/') ||
+    location.pathname === '/user/book-service' ||
+    location.pathname === '/user/saved-addresses'
+    ;
+
+  const hideHeader = location.pathname.startsWith('/user/provider/') ||
+    location.pathname === '/user/search' ||
+    location.pathname === '/user/book-service'
+    || location.pathname === '/user/saved-addresses';
 
   return (
     <div className="bg-light min-vh-100 pb-5">
-      
-      {/* 4. Conditionally Render Navbar */}
-      {!hideNavbar && <Navbar />}
-      
-      {/* 5. Adjust padding based on whether Navbar exists */}
-      <div className={`${hideNavbar ? 'pt-0' : 'py-0'}`}>
-        <Outlet /> 
+
+      {/* Conditionally Render Top Navbar */}
+      {!hideHeader && <Navbar />}
+
+      <div className={`${hideNavbar ? 'pt-0' : 'pt-0 mt-0'}`}>
+        <Outlet />
       </div>
 
-      {/* Bottom Nav usually stays on all user pages */}
-      <BottomNav />
+      {/* Conditionally Render Bottom Nav */}
+      {!hideBottomNav && <BottomNav />}
+
     </div>
   );
 };

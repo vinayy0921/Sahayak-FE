@@ -35,7 +35,7 @@ const Login = () => {
     try {
       setLoading(true); // Start loading
       
-      const response = await fetch(`${API_BASE_URL}/login.php`, {
+      const response = await fetch(`${API_BASE_URL}login.php`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),

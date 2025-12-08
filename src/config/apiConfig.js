@@ -1,2 +1,2 @@
 // src/apiConfig.js
-export const API_BASE_URL = "http://localhost/Sahayak-BE/"; 
+export const API_BASE_URL = "http://localhost:8080/Sahayak-BE/"; 

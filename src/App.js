@@ -21,6 +21,12 @@ import ProfilePage from "./pages/customer/ProfilePage";
 import ProviderDetails from "./pages/customer/ProviderDetails";
 import BookingPage from "./pages/customer/BookingPage";
 import MyBookings from "./pages/customer/MyBookings";
+import ProviderDashboard from "./pages/provider/ProviderDashboard";
+import ProviderSchedule from "./pages/provider/ProviderSchedule";
+import ProviderProfile from "./pages/provider/ProviderProfile";
+import MyServices from "./pages/provider/MyServices";
+import BookingTimeline from "./pages/customer/BookingTimeline";
+import SavedAddresses from "./pages/customer/SavedAddresses";
 
 function App() {
   return (
@@ -41,7 +47,16 @@ function App() {
           <Route path="my-bookings" element={<MyBookings />} />
           <Route path="book-service" element={<BookingPage />} />
           <Route path="provider/:id" element={<ProviderDetails />} />
+          <Route path="booking/:id" element={<BookingTimeline />} />
+          <Route path="saved-addresses" element={<SavedAddresses />} />
         </Route>
+
+        <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+        <Route path="/provider/schedule" element={<ProviderSchedule />} />
+        <Route path="/provider/profile" element={<ProviderProfile />} />
+        <Route path="/provider/services" element={<MyServices />} />
+        
+
       </Routes>
     </Router>
   );

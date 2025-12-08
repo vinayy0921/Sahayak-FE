@@ -9,15 +9,16 @@ const ProfilePage = () => {
   // --- 1. STATE MANAGEMENT ---
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || {});
 
-  // Modals
+  // Modals State
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPicModal, setShowPicModal] = useState(false);
+
 
   // Edit Form Data
   const [editFormData, setEditFormData] = useState({
     name: user.name || '',
     phone: user.phone || '',
-    address: user.address || ''
+    address: user.address || '' // Keeping this as 'Primary Address'
   });
 
   // Photo Upload Data
@@ -26,9 +27,8 @@ const ProfilePage = () => {
 
   // Helper to fix image path
   const getProfileImage = (imgStr) => {
-    if (!imgStr) return `https://ui-avatars.com/api/?name=${user.name}&background=0D6EFD&color=fff&size=150`;
-    if (imgStr.startsWith('http')) return imgStr; // It's already a full URL
-    return `${API_BASE_URL}${imgStr}`; // It's relative, so add base URL
+    if (!imgStr) return `https://ui-avatars.com/api/?name=${user.name}&background=0D6EFD&color=fff&size=150`; 
+    return imgStr.startsWith('http') ? imgStr : `${API_BASE_URL}${imgStr}`; 
   };
 
   // --- 2. LOGOUT LOGIC ---
@@ -40,7 +40,12 @@ const ProfilePage = () => {
     }
   };
 
-  // --- 3. EDIT PROFILE LOGIC ---
+  // --- 3. ADDRESS LOGIC (NEW FEATURE) ---
+
+
+
+
+  // --- 4. EDIT PROFILE LOGIC (EXISTING) ---
   const handleEditChange = (e) => {
     setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
   };
@@ -48,7 +53,7 @@ const ProfilePage = () => {
   const submitEditProfile = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_BASE_URL}user/update_profile.php`, {
+      const response = await fetch(`${API_BASE_URL}/user/update_profile.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...editFormData, id: user.id })
@@ -69,7 +74,7 @@ const ProfilePage = () => {
     }
   };
 
-  // --- 4. PHOTO UPLOAD LOGIC ---
+  // --- 5. PHOTO UPLOAD LOGIC (EXISTING) ---
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -84,7 +89,7 @@ const ProfilePage = () => {
 
     try {
       setUploading(true);
-      const response = await fetch(`${API_BASE_URL}user/upload_profile_pic.php`, {
+      const response = await fetch(`${API_BASE_URL}/user/upload_profile_pic.php`, {
         method: 'POST',
         body: formData
       });
@@ -106,6 +111,7 @@ const ProfilePage = () => {
       setUploading(false);
     }
   };
+  
 
   return (
     <>
@@ -188,6 +194,7 @@ const ProfilePage = () => {
               <i className="fa-solid fa-chevron-right ms-auto text-muted small"></i>
             </Link>
 
+            {/* --- UPDATED: JUST A LINK NOW --- */}
             <Link to="/user/saved-addresses" className="profile-menu-item">
               <i className="fa-solid fa-map-location-dot text-info"></i>
               <span className="fw-medium">Manage Addresses</span>
@@ -256,7 +263,7 @@ const ProfilePage = () => {
                     <input type="tel" name="phone" className="form-control" value={editFormData.phone} onChange={handleEditChange} required />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small text-muted">Address</label>
+                    <label className="form-label small text-muted">Primary Address</label>
                     <textarea name="address" className="form-control" rows="3" value={editFormData.address} onChange={handleEditChange}></textarea>
                   </div>
                   <button type="submit" className="btn btn-primary w-100 rounded-pill">Save Changes</button>
@@ -299,6 +306,9 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+
+
+     
 
     </>
   );
