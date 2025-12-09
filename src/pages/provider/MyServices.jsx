@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProviderBottomNav from '../../components/ProviderBottomNav';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 const MyServices = () => {
@@ -9,6 +8,20 @@ const MyServices = () => {
 
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [categories, setCategories] = useState([]);
+
+    // 2. Fetch Categories in useEffect
+    useEffect(() => {
+        if (!user) { navigate('/login'); return; }
+
+        fetchServices(); // Your existing function
+
+        // Fetch Categories
+        fetch(`${API_BASE_URL}provider/get_categories.php`)
+            .then(res => res.json())
+            .then(data => setCategories(data))
+            .catch(err => console.error("Cat Error:", err));
+    }, []);
 
     // Add Form State
     const [isAdding, setIsAdding] = useState(false);
@@ -37,6 +50,8 @@ const MyServices = () => {
         else fetchServices();
     }, []);
 
+
+
     // --- 2. ADD SERVICE ---
     const handleAdd = async (e) => {
         e.preventDefault();
@@ -46,7 +61,7 @@ const MyServices = () => {
         }
 
         try {
-            console.log("Sending Data:", newService); // Debug 1
+            // console.log("Sending Data:", newService); // Debug 1
 
             const response = await fetch(`${API_BASE_URL}provider/add_service.php`, {
                 method: 'POST',
@@ -62,7 +77,7 @@ const MyServices = () => {
 
             // Debug 2: Check if PHP returned HTML error instead of JSON
             const text = await response.text();
-            console.log("Raw Response:", text);
+            // console.log("Raw Response:", text);
 
             const data = JSON.parse(text); // Manually parse to catch errors
 
@@ -184,7 +199,7 @@ const MyServices = () => {
 
                 </div>
 
-                <ProviderBottomNav />
+
             </div>
 
             {/* === ADD SERVICE MODAL === */}
@@ -198,7 +213,7 @@ const MyServices = () => {
                             </div>
                             <div className="modal-body">
                                 <form onSubmit={handleAdd}>
-                                   
+
                                     <div className="mb-3">
                                         <label className="small text-muted fw-bold">Category</label>
                                         <select
@@ -208,13 +223,12 @@ const MyServices = () => {
                                             required
                                         >
                                             <option value="">Select Category</option>
-                                            {/* MAKE SURE THESE IDs MATCH YOUR 'tblcategories' TABLE IDs */}
-                                            <option value="1">Plumber</option>
-                                            <option value="2">Electrician</option>
-                                            <option value="3">Cleaning</option>
-                                            <option value="4">Tutor</option>
-                                            <option value="5">Carpenter</option>
-                                            <option value="6">AC Repair</option>
+                                            {/* DYNAMIC MAP */}
+                                            {categories.map((cat) => (
+                                                <option key={cat.id} value={cat.id}>
+                                                    {cat.name}
+                                                </option>
+                                            ))}
                                         </select>
                                     </div>
 

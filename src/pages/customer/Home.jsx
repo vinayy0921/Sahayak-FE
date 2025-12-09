@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 // import anime from 'animejs/lib/anime.es.js';
 
 const Home = () => {
-  const user = JSON.parse(localStorage.getItem('user')) || { name: 'Vinay' };
+  // const user = JSON.parse(localStorage.getItem('user')) || { name: 'Vinay' };
 
   // Carousel State
   const [activeSlide, setActiveSlide] = useState(0);
@@ -118,17 +118,7 @@ const Home = () => {
     return () => clearInterval(timer);
   }, [slides.length]);
 
-  // Animation on Load
-  useEffect(() => {
-    // anime({
-    //   targets: '.animate-card',
-    //   translateY: [20, 0],
-    //   opacity: [0, 1],
-    //   delay: anime.stagger(100),
-    //   duration: 800,
-    //   easing: 'easeOutExpo'
-    // });
-  }, []);
+ 
 
   return (
     <>

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import ProviderBottomNav from '../../components/ProviderBottomNav';
+
 import { API_BASE_URL } from '../../config/apiConfig';
 
 const ProviderDashboard = () => {
@@ -273,7 +273,6 @@ const ProviderDashboard = () => {
             )}
 
         </div>
-        <ProviderBottomNav />
       </div>
 
       {/* === BILL MODAL (Same as before) === */}

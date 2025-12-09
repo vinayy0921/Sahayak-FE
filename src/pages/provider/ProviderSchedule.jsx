@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import ProviderBottomNav from '../../components/ProviderBottomNav';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 const ProviderSchedule = () => {
@@ -107,7 +106,7 @@ const ProviderSchedule = () => {
         </div>
 
       </div>
-      <ProviderBottomNav />
+
     </div>
   );
 };

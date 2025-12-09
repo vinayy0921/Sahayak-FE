@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import ProviderBottomNav from '../../components/ProviderBottomNav';
 import { API_BASE_URL } from '../../config/apiConfig';
 
 const ProviderProfile = () => {
@@ -128,7 +127,6 @@ const ProviderProfile = () => {
         </div>
       )}
 
-      <ProviderBottomNav />
     </div>
   );
 };

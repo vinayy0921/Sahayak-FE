@@ -15,18 +15,21 @@ import Registration from "./pages/auth/UserRegister";
 import ProviderRegister from "./pages/auth/ProviderRegister";
 
 // Customer Pages
-import Home from "./pages/customer/Home"; // Make sure this is your Home.jsx content
+import Home from "./pages/customer/Home"; 
 import SearchPage from "./pages/customer/SearchPage";
-import ProfilePage from "./pages/customer/ProfilePage";
-import ProviderDetails from "./pages/customer/ProviderDetails";
-import BookingPage from "./pages/customer/BookingPage";
-import MyBookings from "./pages/customer/MyBookings";
-import ProviderDashboard from "./pages/provider/ProviderDashboard";
-import ProviderSchedule from "./pages/provider/ProviderSchedule";
-import ProviderProfile from "./pages/provider/ProviderProfile";
-import MyServices from "./pages/provider/MyServices";
-import BookingTimeline from "./pages/customer/BookingTimeline";
 import SavedAddresses from "./pages/customer/SavedAddresses";
+import ProfilePage from "./pages/customer/ProfilePage";
+import BookingPage from "./pages/customer/BookingPage";
+import ProviderProfile from "./pages/provider/ProviderProfile";
+import MyBookings from "./pages/customer/MyBookings";
+import BookingTimeline from "./pages/customer/BookingTimeline";
+
+// Provider Pages
+import ProviderSchedule from "./pages/provider/ProviderSchedule";
+import MyServices from "./pages/provider/MyServices";
+import ProviderDashboard from "./pages/provider/ProviderDashboard";
+import ProviderLayout from "./pages/provider/ProviderLayout";
+import ProviderDetails from "./pages/customer/ProviderDetails";
 
 function App() {
   return (
@@ -51,12 +54,16 @@ function App() {
           <Route path="saved-addresses" element={<SavedAddresses />} />
         </Route>
 
-        <Route path="/provider/dashboard" element={<ProviderDashboard />} />
-        <Route path="/provider/schedule" element={<ProviderSchedule />} />
-        <Route path="/provider/profile" element={<ProviderProfile />} />
-        <Route path="/provider/services" element={<MyServices />} />
-        
+        {/* PROTECTED PROVIDER ROUTES (With Provider Navbar & BottomNav) */}
+        <Route path="/provider" element={<ProviderLayout />}>
+          <Route path="dashboard" element={<ProviderDashboard />} />
+          <Route path="schedule" element={<ProviderSchedule />} />
+          <Route path="services" element={<MyServices />} />
+          <Route path="profile" element={<ProviderProfile />} />
+          
+        </Route>
 
+        
       </Routes>
     </Router>
   );

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../../styles/ProfilePage.css';
 import { API_BASE_URL } from '../../config/apiConfig';
+import Dialog from '../../components/ui/Dialog';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -12,7 +13,7 @@ const ProfilePage = () => {
   // Modals State
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPicModal, setShowPicModal] = useState(false);
-
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   // Edit Form Data
   const [editFormData, setEditFormData] = useState({
@@ -27,23 +28,21 @@ const ProfilePage = () => {
 
   // Helper to fix image path
   const getProfileImage = (imgStr) => {
-    if (!imgStr) return `https://ui-avatars.com/api/?name=${user.name}&background=0D6EFD&color=fff&size=150`; 
-    return imgStr.startsWith('http') ? imgStr : `${API_BASE_URL}${imgStr}`; 
+    if (!imgStr) return `https://ui-avatars.com/api/?name=${user.name}&background=0D6EFD&color=fff&size=150`;
+    return imgStr.startsWith('http') ? imgStr : `${API_BASE_URL}${imgStr}`;
   };
 
   // --- 2. LOGOUT LOGIC ---
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      localStorage.removeItem('user');
-      localStorage.removeItem('recentSearches');
-      navigate('/login');
-    }
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
   };
 
-  // --- 3. ADDRESS LOGIC (NEW FEATURE) ---
-
-
-
+  // Triggered when confirming in the Modal
+  const confirmLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('recentSearches');
+    navigate('/login');
+  };
 
   // --- 4. EDIT PROFILE LOGIC (EXISTING) ---
   const handleEditChange = (e) => {
@@ -111,7 +110,7 @@ const ProfilePage = () => {
       setUploading(false);
     }
   };
-  
+
 
   return (
     <>
@@ -228,7 +227,7 @@ const ProfilePage = () => {
               <i className="fa-solid fa-chevron-right ms-auto text-muted small"></i>
             </Link>
 
-            <button onClick={handleLogout} className="profile-menu-item text-danger w-100 text-start border-0 bg-transparent">
+            <button onClick={handleLogoutClick} className="profile-menu-item text-danger w-100 text-start border-0 bg-transparent">
               <i className="fa-solid fa-right-from-bracket"></i>
               <span className="fw-bold">Logout</span>
             </button>
@@ -307,8 +306,44 @@ const ProfilePage = () => {
         </div>
       )}
 
+      {/* ================= 3. LOGOUT DIALOG ================= */}
+      <Dialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        title="Confirm Logout"
+      >
+        <div className="text-center">
+          {/* Icon Circle */}
+          <div className="logout-icon-wrapper">
+            <i className="fa-solid fa-right-from-bracket"></i>
+          </div>
 
-     
+          <h4 className="fw-bold text-dark mb-2">Logging Out?</h4>
+
+          <p className="dialog-text">
+            Are you sure you want to sign out? You will need to login again to access your bookings.
+          </p>
+
+          {/* Buttons */}
+          <div className="dialog-actions">
+            <button
+              onClick={() => setShowLogoutDialog(false)}
+              className="btn-dialog-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmLogout}
+              className="btn-dialog-danger"
+            >
+              Yes, Logout
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+
+
 
     </>
   );

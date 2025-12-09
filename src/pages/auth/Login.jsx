@@ -2,21 +2,19 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { API_BASE_URL } from "../../config/apiConfig"; 
 import "../../styles/AuthPage.css";
+import Dialog from '../../components/ui/Dialog'; 
 
 const Login = () => {
   const navigate = useNavigate();
   
-  // State for loading, form data, and errors
+  // State
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({
-    email: "", 
-    password: "",
-  });
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
-    // Clear error when user starts typing again
     if (errors[e.target.name] || errors.form) {
         setErrors({ ...errors, [e.target.name]: "", form: "" });
     }
@@ -24,16 +22,15 @@ const Login = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrors({}); // Clear previous errors
+    setErrors({}); 
 
-    // Basic Validation
     if (!formData.email || !formData.password) {
         setErrors({ form: "Please fill all fields" });
         return;
     }
 
     try {
-      setLoading(true); // Start loading
+      setLoading(true);
       
       const response = await fetch(`${API_BASE_URL}login.php`, {
         method: "POST",
@@ -47,28 +44,31 @@ const Login = () => {
         // 1. Save Session
         localStorage.setItem("user", JSON.stringify(data.user));
         
-        // 2. Redirect based on Role
-        // Short delay to let user see success state (optional but nice)
+        // 2. Show Success Dialog
+        setShowSuccessModal(true); 
+        setLoading(false);
+
+        // 3. Redirect after delay (2 seconds is better UX than 3)
         setTimeout(() => {
             if (data.user.role === "admin") navigate("/admin/dashboard");
             else if (data.user.role === "provider") navigate("/provider/dashboard");
             else if (data.user.role === "customer") navigate("/user/home");
             else navigate("/"); 
-        }, 500);
+        }, 2000);
         
       } else {
-        // Show specific error from backend (e.g. "Invalid password")
-        setErrors({ form: data.message || "Login failed. Please try again." });
-        setLoading(false); // Stop loading on error
+        setErrors({ form: data.message || "Login failed." });
+        setLoading(false);
       }
     } catch (error) {
       console.error("Error:", error);
-      setErrors({ form: "Server connection failed. Please check your internet." });
-      setLoading(false); // Stop loading on catch
+      setErrors({ form: "Server connection failed." });
+      setLoading(false);
     }
   };
 
   return (
+    <>
     <div className="auth-page-wrapper">
       <button className="auth-back-btn" onClick={() => navigate("/")}>
         <span>←</span> Back
@@ -86,11 +86,10 @@ const Login = () => {
           </Link>
         </div>
 
-        {/* RIGHT SIDE (Login Form) */}
+        {/* RIGHT SIDE */}
         <div className="auth-main">
           <h3 className="auth-title">Login</h3>
           
-          {/* Enhanced Error Alert */}
           {errors.form && (
             <div className="alert alert-danger d-flex align-items-center p-2 mb-3" role="alert">
                 <i className="bi bi-exclamation-triangle-fill me-2"></i>
@@ -108,7 +107,7 @@ const Login = () => {
                 value={formData.email}
                 onChange={handleChange}
                 placeholder="Enter email"
-                disabled={loading} // Disable input while loading
+                disabled={loading}
               />
             </div>
 
@@ -120,8 +119,9 @@ const Login = () => {
                 className={`form-control ${errors.form ? "is-invalid" : ""}`}
                 value={formData.password}
                 onChange={handleChange}
+                autoComplete="on"
                 placeholder="Password"
-                disabled={loading} // Disable input while loading
+                disabled={loading}
               />
             </div>
 
@@ -143,6 +143,29 @@ const Login = () => {
         </div>
       </div>
     </div>
+
+    {/* === SUCCESS DIALOG === */}
+    <Dialog 
+      isOpen={showSuccessModal} 
+      // Prevents closing by clicking outside (forces wait for redirect)
+      onClose={() => {}} 
+      title="Access Granted"
+    >
+      <div className="text-center py-2">
+          <div className="mx-auto mb-3 bg-green-50 text-green-500 w-16 h-16 rounded-full flex items-center justify-center">
+              {/* <i className="fa-solid fa-check text-2xl"></i> */}
+              <i className="fa-regular fa-circle-check text-2xl" style={{fontSize:"100px", color:"green"}}></i>
+          </div>
+          
+          <h4 className="font-bold text-slate-800 mb-2">Successfully Logged In!</h4>
+          
+          <div className="flex items-center justify-center gap-2 text-slate-500 text-sm">
+             <div className="spinner-border spinner-border-sm text-primary" role="status"></div>
+             <span>Redirecting you to dashboard...</span>
+          </div>
+      </div>
+    </Dialog>
+    </>
   );
 };
 

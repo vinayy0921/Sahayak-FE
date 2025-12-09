@@ -13,13 +13,15 @@ const UserLayout = () => {
   // We use .startsWith() because the ID changes (e.g. /user/provider/123)
   const hideBottomNav = location.pathname.startsWith('/user/provider/') ||
     location.pathname === '/user/book-service' ||
-    location.pathname === '/user/saved-addresses'
+    location.pathname === '/user/saved-addresses' ||
+    location.pathname.startsWith('/user/booking/')
     ;
 
   const hideHeader = location.pathname.startsWith('/user/provider/') ||
     location.pathname === '/user/search' ||
-    location.pathname === '/user/book-service'
-    || location.pathname === '/user/saved-addresses';
+    location.pathname === '/user/book-service'||
+     location.pathname === '/user/saved-addresses' ||
+    location.pathname.startsWith('/user/booking/');
 
   return (
     <div className="bg-light min-vh-100 pb-5">

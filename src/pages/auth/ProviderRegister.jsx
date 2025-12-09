@@ -1,8 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config/apiConfig';
-// Import Anime.js V3
-// import anime from 'animejs/lib/anime.es.js';
+import Dialog from '../../components/ui/Dialog';
 
 const ProviderRegister = () => {
   const navigate = useNavigate();
@@ -10,6 +9,8 @@ const ProviderRegister = () => {
   // --- 1. STATE ---
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); 
+
   const [formData, setFormData] = useState({
     name: '', email: '', phone: '', password: '', confirmPassword: '',
     address: '', city: '',
@@ -50,14 +51,6 @@ const ProviderRegister = () => {
   // --- 3. NAVIGATION ---
   const handleNext = () => {
     if (validateStep()) {
-        // Animate transition
-        // anime({
-        //     targets: '.step-container',
-        //     opacity: [0, 1],
-        //     translateX: [20, 0],
-        //     duration: 400,
-        //     easing: 'easeOutQuad'
-        // });
         setStep(step + 1);
     }
   };
@@ -82,8 +75,8 @@ const ProviderRegister = () => {
       const data = await response.json();
 
       if (data.status === 'success') {
-        alert("🎉 Registration Successful! Please Login.");
-        navigate('/login');
+        // Show Dialog 
+        setShowSuccessModal(true);
       } else {
         alert(data.message || "Failed");
       }
@@ -103,6 +96,7 @@ const ProviderRegister = () => {
   };
 
   return (
+    <>
     <div className="min-vh-100 d-flex align-items-center justify-content-center py-5" style={{background: '#f8f9fa'}}>
       
       <div className="card border-0 shadow-lg rounded-4 overflow-hidden" style={{maxWidth: '900px', width:'100%'}}>
@@ -264,6 +258,40 @@ const ProviderRegister = () => {
         </div>
       </div>
     </div>
+
+    {/* === 5. SUCCESS DIALOG === */}
+    <Dialog 
+      isOpen={showSuccessModal} 
+      onClose={() => navigate('/login')} 
+      title="Welcome Aboard!"
+    >
+      <div className="text-center">
+          {/* Success Icon (Green) */}
+          <div style={{
+              width: '70px', height: '70px', 
+              background: '#ecfdf5', color: '#10b981', 
+              borderRadius: '50%', display: 'flex', 
+              alignItems: 'center', justifyContent: 'center', 
+              fontSize: '2rem', margin: '0 auto 16px auto'
+          }}>
+              <i className="fa-solid fa-check"></i>
+          </div>
+          
+          <h4 className="fw-bold text-dark mb-2">Registration Successful</h4>
+          
+          <p className="text-muted small mb-4">
+              Your provider account has been created. Log in now to start accepting jobs and managing your services.
+          </p>
+
+          <button 
+              onClick={() => navigate('/login')}
+              className="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm"
+          >
+              Login to Dashboard
+          </button>
+      </div>
+    </Dialog>
+    </>
   );
 };
 
