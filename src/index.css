@@ -1,22 +1,99 @@
+/* =========================================
+   THEME: DEEP OCEAN & TEAL
+   ========================================= */
 :root {
-    --bs-primary: #0d6efd; /* Or your custom blue hex code */
-    --bs-primary-rgb: 13, 110, 253;
-}
-.btn-primary {
-    background-color: var(--bs-primary);
-    border-color: var(--bs-primary);
+  /* --- 1. CORE PALETTE --- */
+  --primary: #2563EB;       /* Royal Blue (Brand) */
+  --primary-dark: #1E40AF;  /* Darker Blue (Hover) */
+  --secondary: #64748B;     /* Cool Slate (Muted Text) */
+  --dark: #0F172A;          /* Deep Navy (Headings) */
+  --light: #F8FAFC;         /* Cool Gray (Background) */
+  --success: #10B981;       /* Mint Teal (Money/Success) */
+  --warning: #F59E0B;       /* Amber (Ratings) */
+  --danger: #EF4444;        /* Red (Cancel/Error) */
+  
+  /* --- 2. GLASS VARIABLES --- */
+  --glass-bg: rgba(255, 255, 255, 0.85);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.6);
+  --glass-blur: blur(16px);
+  --glass-shadow: 0 8px 32px rgba(15, 23, 42, 0.08); /* Colored shadow */
 }
 
+/* --- 3. GLOBAL RESET --- */
 body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  background-color: var(--light) !important;
+  color: var(--secondary) !important;
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
-code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
-    monospace;
+
+
+/* --- 4. BUTTON OVERRIDES (BOOTSTRAP) --- */
+.btn-primary {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%) !important;
+  border: none !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+  transition: all 0.2s ease;
 }
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
+}
+
+.btn-outline-primary {
+  color: var(--primary) !important;
+  border-color: var(--primary) !important;
+}
+
+.btn-outline-primary:hover {
+  background-color: var(--primary) !important;
+  color: white !important;
+}
+
+/* --- 5. COMPONENT: GLASS HEADER --- */
+.glass-header {
+  background: rgba(255, 255, 255, 0.8) !important;
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid rgba(226, 232, 240, 0.6); /* Slate-200 */
+}
+
+.glass-search-input {
+  background: rgba(241, 245, 249, 0.8) !important; /* Slate-100 */
+  border: 1px solid transparent !important;
+  color: var(--dark) !important;
+}
+
+.glass-search-input:focus {
+  background: #fff !important;
+  border-color: var(--primary) !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15) !important;
+}
+
+/* Location Badge Update */
+.location-pill {
+  background: #EFF6FF !important; /* Blue-50 */
+  color: var(--primary) !important;
+  font-weight: 600;
+  border: 1px solid rgba(37, 99, 235, 0.1);
+}
+
+/* --- 6. COMPONENT: BOTTOM NAV DOCK --- */
+.bottom-nav-dock {
+  backdrop-filter: blur(10px) !important;
+  border: 1px solid rgba(255, 255, 255, 0.8) !important;
+  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.15) !important; /* Deep shadow */
+  border-radius: 25px !important; /* More rounded */
+  padding: 10px 30px !important;
+}
+
+
+/* --- 7. CARDS --- */
+
+/* --- 8. BADGES & STATUS STRIPS --- */
+.badge-pending { background: #FEF3C7; color: #D97706; } /* Amber */
+.badge-confirmed { background: #DBEAFE; color: #2563EB; } /* Blue */
+.badge-completed { background: #D1FAE5; color: #059669; } /* Emerald */
+

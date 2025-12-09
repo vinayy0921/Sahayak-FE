@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import '../../styles/ProfilePage.css';
 import { API_BASE_URL } from '../../config/apiConfig';
+import Dialog from '../../components/ui/Dialog';
 
 const ProfilePage = () => {
   const navigate = useNavigate();
@@ -9,15 +10,16 @@ const ProfilePage = () => {
   // --- 1. STATE MANAGEMENT ---
   const [user, setUser] = useState(JSON.parse(localStorage.getItem('user')) || {});
 
-  // Modals
+  // Modals State
   const [showEditModal, setShowEditModal] = useState(false);
   const [showPicModal, setShowPicModal] = useState(false);
+  const [showLogoutDialog, setShowLogoutDialog] = useState(false);
 
   // Edit Form Data
   const [editFormData, setEditFormData] = useState({
     name: user.name || '',
     phone: user.phone || '',
-    address: user.address || ''
+    address: user.address || '' // Keeping this as 'Primary Address'
   });
 
   // Photo Upload Data
@@ -27,20 +29,22 @@ const ProfilePage = () => {
   // Helper to fix image path
   const getProfileImage = (imgStr) => {
     if (!imgStr) return `https://ui-avatars.com/api/?name=${user.name}&background=0D6EFD&color=fff&size=150`;
-    if (imgStr.startsWith('http')) return imgStr; // It's already a full URL
-    return `${API_BASE_URL}${imgStr}`; // It's relative, so add base URL
+    return imgStr.startsWith('http') ? imgStr : `${API_BASE_URL}${imgStr}`;
   };
 
   // --- 2. LOGOUT LOGIC ---
-  const handleLogout = () => {
-    if (window.confirm("Are you sure you want to logout?")) {
-      localStorage.removeItem('user');
-      localStorage.removeItem('recentSearches');
-      navigate('/login');
-    }
+  const handleLogoutClick = () => {
+    setShowLogoutDialog(true);
   };
 
-  // --- 3. EDIT PROFILE LOGIC ---
+  // Triggered when confirming in the Modal
+  const confirmLogout = () => {
+    localStorage.removeItem('user');
+    localStorage.removeItem('recentSearches');
+    navigate('/login');
+  };
+
+  // --- 4. EDIT PROFILE LOGIC (EXISTING) ---
   const handleEditChange = (e) => {
     setEditFormData({ ...editFormData, [e.target.name]: e.target.value });
   };
@@ -48,7 +52,7 @@ const ProfilePage = () => {
   const submitEditProfile = async (e) => {
     e.preventDefault();
     try {
-      const response = await fetch(`${API_BASE_URL}user/update_profile.php`, {
+      const response = await fetch(`${API_BASE_URL}/user/update_profile.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ ...editFormData, id: user.id })
@@ -69,7 +73,7 @@ const ProfilePage = () => {
     }
   };
 
-  // --- 4. PHOTO UPLOAD LOGIC ---
+  // --- 5. PHOTO UPLOAD LOGIC (EXISTING) ---
   const handleFileChange = (e) => {
     setSelectedFile(e.target.files[0]);
   };
@@ -84,7 +88,7 @@ const ProfilePage = () => {
 
     try {
       setUploading(true);
-      const response = await fetch(`${API_BASE_URL}user/upload_profile_pic.php`, {
+      const response = await fetch(`${API_BASE_URL}/user/upload_profile_pic.php`, {
         method: 'POST',
         body: formData
       });
@@ -106,6 +110,7 @@ const ProfilePage = () => {
       setUploading(false);
     }
   };
+
 
   return (
     <>
@@ -188,6 +193,7 @@ const ProfilePage = () => {
               <i className="fa-solid fa-chevron-right ms-auto text-muted small"></i>
             </Link>
 
+            {/* --- UPDATED: JUST A LINK NOW --- */}
             <Link to="/user/saved-addresses" className="profile-menu-item">
               <i className="fa-solid fa-map-location-dot text-info"></i>
               <span className="fw-medium">Manage Addresses</span>
@@ -221,7 +227,7 @@ const ProfilePage = () => {
               <i className="fa-solid fa-chevron-right ms-auto text-muted small"></i>
             </Link>
 
-            <button onClick={handleLogout} className="profile-menu-item text-danger w-100 text-start border-0 bg-transparent">
+            <button onClick={handleLogoutClick} className="profile-menu-item text-danger w-100 text-start border-0 bg-transparent">
               <i className="fa-solid fa-right-from-bracket"></i>
               <span className="fw-bold">Logout</span>
             </button>
@@ -256,7 +262,7 @@ const ProfilePage = () => {
                     <input type="tel" name="phone" className="form-control" value={editFormData.phone} onChange={handleEditChange} required />
                   </div>
                   <div className="mb-3">
-                    <label className="form-label small text-muted">Address</label>
+                    <label className="form-label small text-muted">Primary Address</label>
                     <textarea name="address" className="form-control" rows="3" value={editFormData.address} onChange={handleEditChange}></textarea>
                   </div>
                   <button type="submit" className="btn btn-primary w-100 rounded-pill">Save Changes</button>
@@ -299,6 +305,45 @@ const ProfilePage = () => {
           </div>
         </div>
       )}
+
+      {/* ================= 3. LOGOUT DIALOG ================= */}
+      <Dialog
+        isOpen={showLogoutDialog}
+        onClose={() => setShowLogoutDialog(false)}
+        title="Confirm Logout"
+      >
+        <div className="text-center">
+          {/* Icon Circle */}
+          <div className="logout-icon-wrapper">
+            <i className="fa-solid fa-right-from-bracket"></i>
+          </div>
+
+          <h4 className="fw-bold text-dark mb-2">Logging Out?</h4>
+
+          <p className="dialog-text">
+            Are you sure you want to sign out? You will need to login again to access your bookings.
+          </p>
+
+          {/* Buttons */}
+          <div className="dialog-actions">
+            <button
+              onClick={() => setShowLogoutDialog(false)}
+              className="btn-dialog-cancel"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={confirmLogout}
+              className="btn-dialog-danger"
+            >
+              Yes, Logout
+            </button>
+          </div>
+        </div>
+      </Dialog>
+
+
+
 
     </>
   );

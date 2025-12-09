@@ -1,287 +1,298 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { API_BASE_URL } from '../../config/apiConfig';
-// 1. Import Anime.js
-import { animate, stagger } from 'animejs';
+import Dialog from '../../components/ui/Dialog';
 
-const Register = () => {
+const ProviderRegister = () => {
   const navigate = useNavigate();
+  
+  // --- 1. STATE ---
+  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false); 
 
-  // State Management
   const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    city: '',
-    profession: '',
-    experience_years: '',
-    bio: '',
-    password: '',
-    confirmPassword: ''
+    name: '', email: '', phone: '', password: '', confirmPassword: '',
+    address: '', city: '',
+    profession: '', experience_years: '', bio: ''
   });
-
-  // 2. Anime.js Animation Logic
-  useEffect(() => {
-    // Animation 1: Card
-    animate('.register-card', {
-      opacity: [0, 1],
-      scale: [0.95, 1],
-      duration: 800,
-      easing: 'outExpo', // Note: string name changed slightly in V4
-      delay: 100
-    });
-
-    // Animation 2: Left Content
-    animate('.left-content-item', {
-      x: [-50, 0], // V4 uses 'x' instead of 'translateX'
-      opacity: [0, 1],
-      duration: 1000,
-      delay: stagger(100, { start: 400 }),
-      easing: 'outExpo'
-    });
-
-    // Animation 3: Form Fields
-    animate('.form-item', {
-      y: [20, 0], // V4 uses 'y' instead of 'translateY'
-      opacity: [0, 1],
-      duration: 800,
-      delay: stagger(60, { start: 600 }),
-      easing: 'outExpo'
-    });
-  }, []);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (formData.password !== formData.confirmPassword) {
-      // Small shake animation on error using animejs
-
-      alert("Passwords do not match!");
-      return;
+  // --- 2. VALIDATION PER STEP ---
+  const validateStep = () => {
+    if (step === 1) {
+        if (!formData.name || !formData.phone || !formData.email || !formData.password) {
+            alert("Please fill all Personal Details");
+            return false;
+        }
+        if (formData.password !== formData.confirmPassword) {
+            alert("Passwords do not match");
+            return false;
+        }
     }
+    if (step === 2) {
+        if (!formData.address || !formData.city) {
+            alert("Please fill Address Details");
+            return false;
+        }
+    }
+    if (step === 3) {
+        if (!formData.profession || !formData.experience_years) {
+            alert("Please fill Work Profile");
+            return false;
+        }
+    }
+    return true;
+  };
 
-    const { confirmPassword, ...payloadData } = formData;
-    const payload = { ...payloadData, role: 'provider' };
+  // --- 3. NAVIGATION ---
+  const handleNext = () => {
+    if (validateStep()) {
+        setStep(step + 1);
+    }
+  };
+
+  const handleBack = () => {
+    setStep(step - 1);
+  };
+
+  // --- 4. FINAL SUBMIT ---
+  const handleSubmit = async () => {
+    if (!validateStep()) return;
+    
+    setLoading(true);
+    const payload = { ...formData, role: 'provider' };
 
     try {
-      const response = await fetch(`${API_BASE_URL}/register_provider.php`, {
+      const response = await fetch(`${API_BASE_URL}register_provider.php`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-
       const data = await response.json();
 
       if (data.status === 'success') {
-        alert("Registration Successful! Please Login.");
-        navigate('/login');
+        // Show Dialog 
+        setShowSuccessModal(true);
       } else {
-        alert(data.message || "Registration failed");
+        alert(data.message || "Failed");
       }
     } catch (error) {
-      console.error("Error:", error);
-      alert("Something went wrong. Check console.");
+      console.error(error);
+      alert("Server Error");
+    } finally {
+        setLoading(false);
     }
+  };
+
+  // Helper for Step Class
+  const getStepClass = (s) => {
+    if (s < step) return "bg-success text-white border-success"; // Completed
+    if (s === step) return "bg-primary text-white border-primary"; // Active
+    return "bg-light text-muted border"; // Pending
   };
 
   return (
     <>
-      <style>
-        {`
-          .register-bg {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            position: relative;
-            overflow: hidden;
-          }
-          /* Floating Blobs */
-          .blob {
-            position: absolute;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: 0;
-            opacity: 0.6;
-            animation: float 10s infinite ease-in-out;
-          }
-          .blob-1 { top: -10%; left: -10%; width: 500px; height: 500px; background: #96c8fb; }
-          .blob-2 { bottom: -10%; right: -10%; width: 400px; height: 400px; background: #feccae; animation-delay: 5s; }
+    <div className="min-vh-100 d-flex align-items-center justify-content-center py-5" style={{background: '#f8f9fa'}}>
+      
+      <div className="card border-0 shadow-lg rounded-4 overflow-hidden" style={{maxWidth: '900px', width:'100%'}}>
+        <div className="row g-0">
+            
+            {/* LEFT SIDE: SUMMARY & STEPS */}
+            <div className="col-lg-4 bg-primary text-white p-5 d-flex flex-column">
+                <h3 className="fw-bold mb-4">Partner Signup</h3>
+                <p className="opacity-75 mb-5">Join Servito in 3 simple steps.</p>
 
-          @keyframes float {
-            0% { transform: translate(0, 0); }
-            50% { transform: translate(30px, 50px); }
-            100% { transform: translate(0, 0); }
-          }
-          
-          /* Custom Focus Styles */
-          .form-control:focus, .form-select:focus {
-            border-color: #0d6efd;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.15);
-          }
-        `}
-      </style>
-      <button className="auth-back-btn" onClick={() => navigate("/")}>
-        <span>←</span> Back
-      </button>
-      <div className="container-fluid min-vh-100 d-flex align-items-center justify-content-center register-bg py-5">
-        <div className="blob blob-1"></div>
-        <div className="blob blob-2"></div>
+                {/* Vertical Stepper */}
+                <div className="d-flex flex-column gap-4">
+                    
+                    {/* Step 1 */}
+                    <div className="d-flex align-items-center gap-3">
+                        <div className={`rounded-circle d-flex align-items-center justify-content-center fw-bold ${getStepClass(1)}`} style={{width:'40px', height:'40px'}}>
+                            {step > 1 ? <i className="fa-solid fa-check"></i> : '1'}
+                        </div>
+                        <span className={step >= 1 ? "fw-bold" : "opacity-50"}>Personal Info</span>
+                    </div>
 
-        {/* Added 'register-card' class for AnimeJS to target */}
-        <div className="card shadow-lg border-0 rounded-4 overflow-hidden register-card" style={{ maxWidth: '1100px', width: '100%', zIndex: 1, opacity: 0 }}>
-          <div className="row g-0">
+                    <div className="vr ms-3 opacity-25" style={{height:'30px'}}></div>
 
-            {/* LEFT SIDE */}
-            <div className="col-lg-5 d-none d-lg-flex flex-column justify-content-center p-5 text-white"
-              style={{ background: 'linear-gradient(135deg, #0d6efd 0%, #0043a8 100%)' }}>
+                    {/* Step 2 */}
+                    <div className="d-flex align-items-center gap-3">
+                        <div className={`rounded-circle d-flex align-items-center justify-content-center fw-bold ${getStepClass(2)}`} style={{width:'40px', height:'40px'}}>
+                            {step > 2 ? <i className="fa-solid fa-check"></i> : '2'}
+                        </div>
+                        <span className={step >= 2 ? "fw-bold" : "opacity-50"}>Location</span>
+                    </div>
 
-              <div className="mb-auto left-content-item">
-                <h3 className="fw-bold"><span className="text-warning">SAHA</span>YAK.</h3>
-              </div>
+                    <div className="vr ms-3 opacity-25" style={{height:'30px'}}></div>
 
-              <h1 className="fw-bold display-5 mb-4 left-content-item">Turn Your Skills Into Income.</h1>
-              <p className="lead mb-4 opacity-75 left-content-item">Join the fastest-growing network of professionals in Surat.</p>
+                    {/* Step 3 */}
+                    <div className="d-flex align-items-center gap-3">
+                        <div className={`rounded-circle d-flex align-items-center justify-content-center fw-bold ${getStepClass(3)}`} style={{width:'40px', height:'40px'}}>
+                            3
+                        </div>
+                        <span className={step >= 3 ? "fw-bold" : "opacity-50"}>Work Profile</span>
+                    </div>
 
-              <div className="d-flex flex-column gap-3 fs-5 opacity-90 mb-5">
-                <div className="d-flex align-items-center left-content-item">
-                  <div className="bg-white bg-opacity-25 p-2 rounded-circle me-3">
-                    <i className="fa-solid fa-indian-rupee-sign"></i>
-                  </div>
-                  <span>Earn on your terms</span>
                 </div>
-                <div className="d-flex align-items-center left-content-item">
-                  <div className="bg-white bg-opacity-25 p-2 rounded-circle me-3">
-                    <i className="fa-solid fa-people-group text-white"></i>
-                  </div>
-                  <span>Connect with 1000+ Customers</span>
-                </div>
-              </div>
 
-              <div className="mt-auto left-content-item">
-                <small className="opacity-75">Already have an account?</small> <br />
-                <Link to="/login" className="text-white fw-bold text-decoration-none fs-5">Login here &rarr;</Link>
-              </div>
+                <div className="mt-auto pt-5">
+                    <small className="opacity-50">Already registered?</small> <br/>
+                    <Link to="/login" className="text-white fw-bold text-decoration-none">Login here &rarr;</Link>
+                </div>
             </div>
 
-            {/* RIGHT SIDE */}
-            <div className="col-lg-7 bg-white p-4 p-md-5">
-              <div className="text-center text-lg-start mb-4 form-item">
-                <h2 className="fw-bold text-dark">Register as a Professional</h2>
-                <p className="text-muted">Fill in your details to get verified.</p>
-              </div>
+            {/* RIGHT SIDE: FORMS */}
+            <div className="col-lg-8 bg-white p-5">
+                <div className="step-container">
+                    
+                    {/* === STEP 1: PERSONAL === */}
+                    {step === 1 && (
+                        <div>
+                            <h4 className="fw-bold mb-4 text-dark">Who are you?</h4>
+                            <div className="row g-3">
+                                <div className="col-12">
+                                    <label className="form-label">Full Name</label>
+                                    <input type="text" name="name" className="form-control" value={formData.name} onChange={handleChange} placeholder="e.g. Rajesh Kumar" />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label">Phone</label>
+                                    <input type="tel" name="phone" className="form-control" value={formData.phone} onChange={handleChange} placeholder="98765..." />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label">Email</label>
+                                    <input type="email" name="email" className="form-control" value={formData.email} onChange={handleChange} placeholder="rajesh@gmail.com" />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label">Password</label>
+                                    <input type="password" name="password" className="form-control" value={formData.password} onChange={handleChange} />
+                                </div>
+                                <div className="col-md-6">
+                                    <label className="form-label">Confirm Password</label>
+                                    <input type="password" name="confirmPassword" className="form-control" value={formData.confirmPassword} onChange={handleChange} />
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-              <form onSubmit={handleSubmit}>
-                <div className="row g-3">
+                    {/* === STEP 2: LOCATION === */}
+                    {step === 2 && (
+                        <div>
+                            <h4 className="fw-bold mb-4 text-dark">Where are you based?</h4>
+                            <div className="row g-3">
+                                <div className="col-12">
+                                    <label className="form-label">Full Address</label>
+                                    <textarea name="address" className="form-control" rows="3" value={formData.address} onChange={handleChange} placeholder="Shop No, Area, Landmark"></textarea>
+                                </div>
+                                <div className="col-12">
+                                    <label className="form-label">City</label>
+                                    <select name="city" className="form-select" value={formData.city} onChange={handleChange}>
+                                        <option value="">Select City</option>
+                                        <option>Surat</option>
+                                        <option>Ahmedabad</option>
+                                        <option>Vadodara</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                  {/* Personal Info */}
-                  <div className="col-12 form-item">
-                    <h6 className="text-primary fw-bold text-uppercase small letter-spacing-1 border-bottom pb-2">Personal Details</h6>
-                  </div>
+                    {/* === STEP 3: WORK === */}
+                    {step === 3 && (
+                        <div>
+                            <h4 className="fw-bold mb-4 text-dark">What do you do?</h4>
+                            <div className="row g-3">
+                                <div className="col-12">
+                                    <label className="form-label">Profession</label>
+                                    <select name="profession" className="form-select" value={formData.profession} onChange={handleChange}>
+                                        <option value="">Select Category</option>
+                                        <option>Plumber</option>
+                                        <option>Electrician</option>
+                                        <option>Carpenter</option>
+                                        <option>Cleaner</option>
+                                        <option>AC Repair</option>
+                                    </select>
+                                </div>
+                                <div className="col-12">
+                                    <label className="form-label">Experience (Years)</label>
+                                    <input type="number" name="experience_years" className="form-control" value={formData.experience_years} onChange={handleChange} />
+                                </div>
+                                <div className="col-12">
+                                    <label className="form-label">Short Bio (Optional)</label>
+                                    <textarea name="bio" className="form-control" rows="2" value={formData.bio} onChange={handleChange} placeholder="e.g. Expert in pipe fitting..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+                    )}
 
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <input type="text" className="form-control" name="name" placeholder="Name" onChange={handleChange} required />
-                      <label>Full Name</label>
+                    {/* ACTION BUTTONS */}
+                    <div className="d-flex justify-content-between mt-5 pt-3 border-top">
+                        {step > 1 ? (
+                            <button className="btn btn-outline-secondary px-4 rounded-pill" onClick={handleBack}>
+                                Back
+                            </button>
+                        ) : <div></div>}
+
+                        {step < 3 ? (
+                            <button className="btn btn-primary px-5 rounded-pill" onClick={handleNext}>
+                                Next <i className="fa-solid fa-arrow-right ms-2"></i>
+                            </button>
+                        ) : (
+                            <button 
+                                className="btn btn-success px-5 rounded-pill fw-bold" 
+                                onClick={handleSubmit}
+                                disabled={loading}
+                            >
+                                {loading ? "Creating..." : "Create Account"}
+                            </button>
+                        )}
                     </div>
-                  </div>
-
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <input type="tel" className="form-control" name="phone" placeholder="Phone" onChange={handleChange} required />
-                      <label>Phone Number</label>
-                    </div>
-                  </div>
-
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <input type="email" className="form-control" name="email" placeholder="Email" onChange={handleChange} required />
-                      <label>Email Address</label>
-                    </div>
-                  </div>
-
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <input type="text" className="form-control" name="city" placeholder="City" onChange={handleChange} required />
-                      <label>City</label>
-                    </div>
-                  </div>
-
-                  {/* Professional Info */}
-                  <div className="col-12 mt-4 form-item">
-                    <h6 className="text-primary fw-bold text-uppercase small letter-spacing-1 border-bottom pb-2">Work Profile</h6>
-                  </div>
-
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <select className="form-select" name="profession" onChange={handleChange} required>
-                        <option value="">Select Category...</option>
-                        <option value="Plumber">Plumber</option>
-                        <option value="Electrician">Electrician</option>
-                        <option value="Carpenter">Carpenter</option>
-                        <option value="Tutor">Tutor</option>
-                        <option value="Cleaner">Home Cleaner</option>
-                        <option value="AC Repair">AC Repair</option>
-                        <option value="Other">Other</option>
-                      </select>
-                      <label>Your Profession</label>
-                    </div>
-                  </div>
-
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <input type="number" className="form-control" name="experience_years" placeholder="Years" onChange={handleChange} />
-                      <label>Years of Experience</label>
-                    </div>
-                  </div>
-
-                  <div className="col-12 form-item">
-                    <div className="form-floating">
-                      <textarea className="form-control" name="bio" placeholder="Bio" style={{ height: '80px' }} onChange={handleChange}></textarea>
-                      <label>Short Bio</label>
-                    </div>
-                  </div>
-
-                  {/* Security */}
-                  <div className="col-12 mt-4 form-item">
-                    <h6 className="text-primary fw-bold text-uppercase small letter-spacing-1 border-bottom pb-2">Security</h6>
-                  </div>
-
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <input type="password" className="form-control" name="password" placeholder="Password" onChange={handleChange} required />
-                      <label>Create Password</label>
-                    </div>
-                  </div>
-
-                  <div className="col-md-6 form-item">
-                    <div className="form-floating">
-                      <input type="password" className="form-control" name="confirmPassword" placeholder="Confirm" onChange={handleChange} required />
-                      <label>Confirm Password</label>
-                    </div>
-                  </div>
-
-                  <div className="col-12 mt-4 form-item">
-                    <button type="submit" className="btn btn-primary w-100 py-3 fw-bold rounded-3 shadow-sm">
-                      Create Partner Account
-                    </button>
-                  </div>
 
                 </div>
-              </form>
-
-              <div className="text-center mt-4 d-lg-none form-item">
-                <span className="text-muted">Already have an account? </span>
-                <Link to="/login" className="text-primary fw-bold text-decoration-none">Login</Link>
-              </div>
             </div>
 
-          </div>
         </div>
       </div>
+    </div>
+
+    {/* === 5. SUCCESS DIALOG === */}
+    <Dialog 
+      isOpen={showSuccessModal} 
+      onClose={() => navigate('/login')} 
+      title="Welcome Aboard!"
+    >
+      <div className="text-center">
+          {/* Success Icon (Green) */}
+          <div style={{
+              width: '70px', height: '70px', 
+              background: '#ecfdf5', color: '#10b981', 
+              borderRadius: '50%', display: 'flex', 
+              alignItems: 'center', justifyContent: 'center', 
+              fontSize: '2rem', margin: '0 auto 16px auto'
+          }}>
+              <i className="fa-solid fa-check"></i>
+          </div>
+          
+          <h4 className="fw-bold text-dark mb-2">Registration Successful</h4>
+          
+          <p className="text-muted small mb-4">
+              Your provider account has been created. Log in now to start accepting jobs and managing your services.
+          </p>
+
+          <button 
+              onClick={() => navigate('/login')}
+              className="btn btn-primary w-100 rounded-pill fw-bold py-2 shadow-sm"
+          >
+              Login to Dashboard
+          </button>
+      </div>
+    </Dialog>
     </>
   );
 };
 
-export default Register;
+export default ProviderRegister;

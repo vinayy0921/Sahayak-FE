@@ -152,7 +152,7 @@ const SearchPage = () => {
                               <div className="d-flex align-items-center gap-2 mb-2">
                                 <img src={service.profile_img || "https://via.placeholder.com/30"} className="provider-avatar-small" alt="" />
                                 <small className="text-muted fw-medium" style={{ fontSize: '0.85rem' }}>{service.provider_name}</small>
-                                {service.is_verified == 1 && <i className="fa-solid fa-circle-check text-primary small" title="Verified"></i>}
+                                {service.is_verified === 1 && <i className="fa-solid fa-circle-check text-primary small" title="Verified"></i>}
                               </div>
 
                               <div className="d-flex align-items-center gap-1 text-muted small mb-2">
